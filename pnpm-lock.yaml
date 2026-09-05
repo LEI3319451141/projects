@@ -101,6 +101,18 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.18
+      '@types/node':
+        specifier: ^20
+        version: 20.19.30
+      '@types/pg':
+        specifier: ^8.16.0
+        version: 8.16.0
+      '@types/react':
+        specifier: ^19
+        version: 19.2.10
+      '@types/react-dom':
+        specifier: ^19
+        version: 19.2.3(@types/react@19.2.10)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -176,6 +188,9 @@ importers:
       tailwindcss:
         specifier: ^4
         version: 4.1.18
+      tsup:
+        specifier: ^8.3.5
+        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@1.10.2)
       tw-animate-css:
         specifier: ^1.4.0
         version: 1.4.0
@@ -194,19 +209,7 @@ importers:
         version: 2.0.1
       '@react-dev-inspector/middleware':
         specifier: ^2.0.1
-        version: 2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6))
-      '@types/node':
-        specifier: ^20
-        version: 20.19.30
-      '@types/pg':
-        specifier: ^8.16.0
-        version: 8.16.0
-      '@types/react':
-        specifier: ^19
-        version: 19.2.10
-      '@types/react-dom':
-        specifier: ^19
-        version: 19.2.3(@types/react@19.2.10)
+        version: 2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6))
       eslint:
         specifier: ^9
         version: 9.39.2(jiti@2.6.1)
@@ -218,7 +221,7 @@ importers:
         version: 1.2.2
       react-dev-inspector:
         specifier: ^2.0.1
-        version: 2.0.1(@types/react@19.2.10)(eslint@9.39.2(jiti@2.6.1))(react@19.2.3)(typescript@5.9.3)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6))
+        version: 2.0.1(@types/react@19.2.10)(eslint@9.39.2(jiti@2.6.1))(react@19.2.3)(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6))
       shadcn:
         specifier: latest
         version: 3.7.0(@cfworker/json-schema@4.1.1)(@types/node@20.19.30)(hono@4.11.7)(typescript@5.9.3)
@@ -228,9 +231,6 @@ importers:
       stylelint-config-standard:
         specifier: ^38.0.0
         version: 38.0.0(stylelint@16.26.1(typescript@5.9.3))
-      tsup:
-        specifier: ^8.3.5
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@1.10.2)
       tsx:
         specifier: ^4.19.2
         version: 4.21.0
@@ -8435,9 +8435,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@react-dev-inspector/middleware@2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6))':
+  '@react-dev-inspector/middleware@2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6))':
     dependencies:
-      react-dev-utils: 12.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6))
+      react-dev-utils: 12.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6))
     transitivePeerDependencies:
       - eslint
       - supports-color
@@ -8445,10 +8445,10 @@ snapshots:
       - vue-template-compiler
       - webpack
 
-  '@react-dev-inspector/umi3-plugin@2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6))':
+  '@react-dev-inspector/umi3-plugin@2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6))':
     dependencies:
       '@react-dev-inspector/babel-plugin': 2.0.1
-      '@react-dev-inspector/middleware': 2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6))
+      '@react-dev-inspector/middleware': 2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6))
     transitivePeerDependencies:
       - eslint
       - supports-color
@@ -8456,10 +8456,10 @@ snapshots:
       - vue-template-compiler
       - webpack
 
-  '@react-dev-inspector/umi4-plugin@2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6))':
+  '@react-dev-inspector/umi4-plugin@2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6))':
     dependencies:
       '@react-dev-inspector/babel-plugin': 2.0.1
-      '@react-dev-inspector/middleware': 2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6))
+      '@react-dev-inspector/middleware': 2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6))
     transitivePeerDependencies:
       - eslint
       - supports-color
@@ -8467,9 +8467,9 @@ snapshots:
       - vue-template-compiler
       - webpack
 
-  '@react-dev-inspector/vite-plugin@2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6))':
+  '@react-dev-inspector/vite-plugin@2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6))':
     dependencies:
-      '@react-dev-inspector/middleware': 2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6))
+      '@react-dev-inspector/middleware': 2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6))
     transitivePeerDependencies:
       - eslint
       - supports-color
@@ -10607,7 +10607,7 @@ snapshots:
     dependencies:
       is-callable: 1.2.7
 
-  fork-ts-checker-webpack-plugin@6.5.3(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6)):
+  fork-ts-checker-webpack-plugin@6.5.3(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6)):
     dependencies:
       '@babel/code-frame': 7.28.6
       '@types/json-schema': 7.0.15
@@ -10623,7 +10623,7 @@ snapshots:
       semver: 7.7.3
       tapable: 1.1.3
       typescript: 5.9.3
-      webpack: 5.104.1(esbuild@0.25.12)(postcss@8.5.6)
+      webpack: 5.104.1(esbuild@0.27.3)(postcss@8.5.6)
     optionalDependencies:
       eslint: 9.39.2(jiti@2.6.1)
 
@@ -11793,18 +11793,18 @@ snapshots:
       date-fns-jalali: 4.1.0-0
       react: 19.2.3
 
-  react-dev-inspector@2.0.1(@types/react@19.2.10)(eslint@9.39.2(jiti@2.6.1))(react@19.2.3)(typescript@5.9.3)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6)):
+  react-dev-inspector@2.0.1(@types/react@19.2.10)(eslint@9.39.2(jiti@2.6.1))(react@19.2.3)(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6)):
     dependencies:
       '@react-dev-inspector/babel-plugin': 2.0.1
-      '@react-dev-inspector/middleware': 2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6))
-      '@react-dev-inspector/umi3-plugin': 2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6))
-      '@react-dev-inspector/umi4-plugin': 2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6))
-      '@react-dev-inspector/vite-plugin': 2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6))
+      '@react-dev-inspector/middleware': 2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6))
+      '@react-dev-inspector/umi3-plugin': 2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6))
+      '@react-dev-inspector/umi4-plugin': 2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6))
+      '@react-dev-inspector/vite-plugin': 2.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6))
       '@types/react-reconciler': 0.33.0(@types/react@19.2.10)
       hotkeys-js: 3.13.15
       picocolors: 1.0.0
       react: 19.2.3
-      react-dev-utils: 12.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6))
+      react-dev-utils: 12.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6))
     transitivePeerDependencies:
       - '@types/react'
       - eslint
@@ -11813,7 +11813,7 @@ snapshots:
       - vue-template-compiler
       - webpack
 
-  react-dev-utils@12.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6)):
+  react-dev-utils@12.0.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6)):
     dependencies:
       '@babel/code-frame': 7.28.6
       address: 1.2.2
@@ -11824,7 +11824,7 @@ snapshots:
       escape-string-regexp: 4.0.0
       filesize: 8.0.7
       find-up: 5.0.0
-      fork-ts-checker-webpack-plugin: 6.5.3(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6))
+      fork-ts-checker-webpack-plugin: 6.5.3(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6))
       global-modules: 2.0.0
       globby: 11.1.0
       gzip-size: 6.0.0
@@ -11839,7 +11839,7 @@ snapshots:
       shell-quote: 1.8.3
       strip-ansi: 6.0.1
       text-table: 0.2.0
-      webpack: 5.104.1(esbuild@0.25.12)(postcss@8.5.6)
+      webpack: 5.104.1(esbuild@0.27.3)(postcss@8.5.6)
     optionalDependencies:
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -12503,15 +12503,15 @@ snapshots:
 
   tapable@2.3.3: {}
 
-  terser-webpack-plugin@5.6.1(esbuild@0.25.12)(postcss@8.5.6)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6)):
+  terser-webpack-plugin@5.6.1(esbuild@0.27.3)(postcss@8.5.6)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
       schema-utils: 4.3.3
       terser: 5.49.2
-      webpack: 5.104.1(esbuild@0.25.12)(postcss@8.5.6)
+      webpack: 5.104.1(esbuild@0.27.3)(postcss@8.5.6)
     optionalDependencies:
-      esbuild: 0.25.12
+      esbuild: 0.27.3
       postcss: 8.5.6
 
   terser@5.49.2:
@@ -12803,7 +12803,7 @@ snapshots:
 
   webpack-sources@3.5.1: {}
 
-  webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6):
+  webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6):
     dependencies:
       '@types/eslint-scope': 3.7.7
       '@types/estree': 1.0.9
@@ -12827,7 +12827,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 4.3.3
       tapable: 2.3.3
-      terser-webpack-plugin: 5.6.1(esbuild@0.25.12)(postcss@8.5.6)(webpack@5.104.1(esbuild@0.25.12)(postcss@8.5.6))
+      terser-webpack-plugin: 5.6.1(esbuild@0.27.3)(postcss@8.5.6)(webpack@5.104.1(esbuild@0.27.3)(postcss@8.5.6))
       watchpack: 2.5.2
       webpack-sources: 3.5.1
     transitivePeerDependencies:
