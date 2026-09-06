@@ -51,10 +51,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 清理文本：移除括号中的动作/神态描述（TTS 不朗读这些内容）
+    // 支持中文括号（）、英文括号()、方括号[]、星号*
+    const cleanText = text
+      .replace(/（[^）]*）/g, "")  // 中文括号
+      .replace(/\([^)]*\)/g, "")   // 英文括号
+      .replace(/\[[^\]]*\]/g, "")  // 方括号
+      .replace(/\*[^*]*\*/g, "")   // 星号包裹
+      .replace(/\s+/g, " ")        // 合并多余空格
+      .trim();
+
     // 构建请求体
     const requestBody: Record<string, unknown> = {
       model,
-      input: text,
+      input: cleanText,
       response_format: "mp3",
     };
 
