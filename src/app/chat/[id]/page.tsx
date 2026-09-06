@@ -70,16 +70,50 @@ async function loadMessages(guestId: string, characterId: string): Promise<ChatM
         createdAt: string;
       }[];
     };
-    return data.messages.map((m) => ({
-      id: m.id,
-      dbId: m.id,
-      role: m.role as 'user' | 'assistant',
-      type: m.photoUrl ? 'image' : 'text',
-      content: m.content,
-      audioUrl: m.audioUrl || undefined,
-      imageUrl: m.photoUrl || undefined,
-      timestamp: new Date(m.createdAt).getTime(),
-    }));
+    const result: ChatMessage[] = [];
+    for (const m of data.messages) {
+      // 兼容旧数据：如果 content 含 PHOTO 标记，拆分为文本+图片消息
+      const photoMatches = [...m.content.matchAll(/\[SEND_PHOTO:\s*([^\]]+)\]/g)];
+      if (photoMatches.length > 0 && m.photoUrl === null) {
+        const cleanText = m.content.replace(/\[SEND_PHOTO:\s*[^\]]+\]/g, '').trim();
+        // 文本部分
+        if (cleanText) {
+          result.push({
+            id: m.id,
+            dbId: m.id,
+            role: m.role as 'user' | 'assistant',
+            type: 'text',
+            content: cleanText,
+            audioUrl: m.audioUrl || undefined,
+            timestamp: new Date(m.createdAt).getTime(),
+          });
+        }
+        // 图片部分
+        photoMatches.forEach((match, idx) => {
+          result.push({
+            id: `${m.id}_img_${idx}`,
+            role: m.role as 'user' | 'assistant',
+            type: 'image',
+            content: match[1].trim(),
+            timestamp: new Date(m.createdAt).getTime() + idx + 1,
+          });
+        });
+      } else {
+        // 正常消息
+        result.push({
+          id: m.id,
+          dbId: m.id,
+          role: m.role as 'user' | 'assistant',
+          // photoUrl 不为 null 即为图片消息（空字符串表示生成中）
+          type: m.photoUrl !== null ? 'image' : 'text',
+          content: m.content,
+          audioUrl: m.audioUrl || undefined,
+          imageUrl: m.photoUrl || undefined,
+          timestamp: new Date(m.createdAt).getTime(),
+        });
+      }
+    }
+    return result;
   } catch {
     return [];
   }
@@ -251,6 +285,7 @@ export default function ChatPage() {
       const decoder = new TextDecoder();
       let fullText = '';
       let savedAssistantId: string | null = null;
+      let savedImageMsgIds: string[] = [];
 
       while (true) {
         const { done, value } = await reader.read();
@@ -266,6 +301,7 @@ export default function ChatPage() {
               if (data.done) {
                 // 捕获后端保存的消息 ID
                 if (data.assistantMsgId) savedAssistantId = data.assistantMsgId;
+                if (data.imageMsgIds) savedImageMsgIds = data.imageMsgIds;
                 continue;
               }
               if (data.error) {
@@ -319,9 +355,12 @@ export default function ChatPage() {
       });
 
       // Generate images if any
-      for (const desc of photoDescriptions) {
+      for (let i = 0; i < photoDescriptions.length; i++) {
+        const desc = photoDescriptions[i];
+        const imageMsgDbId = savedImageMsgIds[i]; // 后端返回的对应图片消息 DB ID
         const imageMsg: ChatMessage = {
           id: generateId(),
+          dbId: imageMsgDbId || undefined,
           role: 'assistant',
           type: 'image',
           content: desc,
@@ -337,7 +376,10 @@ export default function ChatPage() {
                 m.id === imageMsg.id ? { ...m, imageUrl } : m,
               ),
             );
-            // 注意：图片消息没有单独入库，这里不 patch
+            // 保存图片 URL 到数据库，确保退出后仍能显示
+            if (imageMsg.dbId) {
+              patchMessageMedia(imageMsg.dbId, { photoUrl: imageUrl });
+            }
           }
         });
       }

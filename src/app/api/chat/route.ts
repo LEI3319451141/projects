@@ -135,14 +135,38 @@ export async function POST(request: NextRequest) {
 
           // 流结束后保存 AI 回复到数据库
           let savedAssistantMsgId: string | null = null;
+          const savedImageMsgIds: string[] = [];
           if (sessionId && fullAssistantText) {
             try {
-              const savedAssistant = await addMessage({
-                sessionId,
-                role: "assistant",
-                content: fullAssistantText,
-              });
-              savedAssistantMsgId = savedAssistant.id;
+              // 解析 PHOTO 标记，分离文本和图片
+              const photoDescriptions: string[] = [];
+              const cleanText = fullAssistantText
+                .replace(/\[SEND_PHOTO:\s*([^\]]+)\]/g, (_match, desc: string) => {
+                  photoDescriptions.push(desc.trim());
+                  return '';
+                })
+                .trim();
+
+              // 保存文本消息（如果有内容）
+              if (cleanText) {
+                const savedAssistant = await addMessage({
+                  sessionId,
+                  role: "assistant",
+                  content: cleanText,
+                });
+                savedAssistantMsgId = savedAssistant.id;
+              }
+
+              // 为每个图片描述创建独立的图片消息（photoUrl 后续由前端补上）
+              for (const desc of photoDescriptions) {
+                const savedImage = await addMessage({
+                  sessionId,
+                  role: "assistant",
+                  content: desc,
+                  photoUrl: "", // 先占位，前端生成图片后更新
+                });
+                savedImageMsgIds.push(savedImage.id);
+              }
             } catch (dbErr) {
               console.error("Save assistant message error:", dbErr);
             }
@@ -154,6 +178,7 @@ export async function POST(request: NextRequest) {
                 done: true,
                 userMsgId: savedUserMsgId,
                 assistantMsgId: savedAssistantMsgId,
+                imageMsgIds: savedImageMsgIds,
               })}\n\n`
             )
           );
