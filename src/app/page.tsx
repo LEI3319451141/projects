@@ -11,7 +11,7 @@ import {
   useTransform,
   type Variants,
 } from "motion/react";
-import { Sparkles, Heart, MessageCircle, ShieldCheck } from "lucide-react";
+import { Sparkles, Heart, MessageCircle, ShieldCheck, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
@@ -270,12 +270,29 @@ export default function HomePage() {
   const [verified, setVerified] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [guestId, setGuestId] = useState<string>("");
+  const [currentUser, setCurrentUser] = useState<{ username: string; nickname: string } | null>(null);
   const turnstileRef = useRef<TurnstileInstance | null>(null);
 
-  // 启动时获取/创建 guestId
+  // 启动时：先检查登录状态，再获取/创建 guestId
   useEffect(() => {
     async function initGuest() {
       try {
+        // 1. 检查是否已登录（cookie）
+        const meRes = await fetch("/api/auth/me");
+        const meData = await meRes.json();
+        if (meData.user?.username) {
+          setCurrentUser({
+            username: meData.user.username,
+            nickname: meData.user.nickname || meData.user.username,
+          });
+          setVerified(true); // 注册用户自动跳过 Turnstile
+          // 登录用户把 session 的 guestId 存到 localStorage 方便聊天 API 使用
+          localStorage.setItem("guest_id", meData.user.id);
+          setGuestId(meData.user.id);
+          return;
+        }
+
+        // 2. 未登录，获取/创建 guestId
         const saved = localStorage.getItem("guest_id");
         if (saved) {
           setGuestId(saved);
@@ -293,6 +310,24 @@ export default function HomePage() {
     }
     initGuest();
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // ignore
+    }
+    setCurrentUser(null);
+    setVerified(false);
+    // 清空本地 guestId 强制重新获取
+    localStorage.removeItem("guest_id");
+    const res = await fetch("/api/guest", { method: "POST" });
+    const data = await res.json();
+    if (data.guestId) {
+      localStorage.setItem("guest_id", data.guestId);
+      setGuestId(data.guestId);
+    }
+  };
 
   const handleTurnstileSuccess = async (token: string) => {
     setVerifying(true);
@@ -331,6 +366,45 @@ export default function HomePage() {
         background: "linear-gradient(180deg, #FAFAFA 0%, #F0F0F0 100%)",
       }}
     >
+      {/* 右上角登录/用户区域 */}
+      <div className="absolute top-4 right-4 z-20">
+        {currentUser ? (
+          <div className="flex items-center gap-2">
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[13px] font-medium"
+              style={{
+                background: "linear-gradient(135deg, #07C160, #1AB36A)",
+                boxShadow: "0 2px 6px rgba(7,193,96,0.3)",
+              }}
+            >
+              {currentUser.nickname.charAt(0).toUpperCase()}
+            </div>
+            <span className="text-[13px] text-[#555] max-w-[80px] truncate">
+              {currentUser.nickname}
+            </span>
+            <button
+              onClick={handleLogout}
+              className="text-[12px] text-[#999] hover:text-[#e03e3e] ml-1 px-2 py-1 rounded-md hover:bg-black/5 transition-colors"
+            >
+              退出
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => router.push("/login")}
+            className="flex items-center gap-1.5 text-[13px] text-[#555] hover:text-[#07C160] px-3 py-1.5 rounded-full transition-colors"
+            style={{
+              background: "rgba(255,255,255,0.6)",
+              backdropFilter: "blur(8px)",
+              border: "1px solid rgba(0,0,0,0.06)",
+            }}
+          >
+            <User className="w-3.5 h-3.5" />
+            登录 / 注册
+          </button>
+        )}
+      </div>
+
       {/* 背景装饰光晕 */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <motion.div

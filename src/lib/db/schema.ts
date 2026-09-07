@@ -12,17 +12,27 @@ import {
 import { relations } from 'drizzle-orm';
 
 /**
- * 游客表：匿名用户标识（后台用户管理复用此表）
+ * 游客表：匿名用户 + 注册用户
+ * username/passwordHash 为空时表示纯游客（仅依赖 Turnstile 验证）
+ * 有 username 表示已注册用户，自动通过人机验证
  */
-export const guests = pgTable('guests', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  nickname: varchar('nickname', { length: 50 }),
-  email: varchar('email', { length: 255 }),
-  status: varchar('status', { length: 20 }).default('active').notNull(), // active | banned
-  humanVerified: boolean('human_verified').default(false).notNull(), // Cloudflare Turnstile 验证通过
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  lastSeenAt: timestamp('last_seen_at').defaultNow().notNull(),
-});
+export const guests = pgTable(
+  'guests',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    username: varchar('username', { length: 50 }),
+    passwordHash: text('password_hash'),
+    nickname: varchar('nickname', { length: 50 }),
+    email: varchar('email', { length: 255 }),
+    status: varchar('status', { length: 20 }).default('active').notNull(), // active | banned
+    humanVerified: boolean('human_verified').default(false).notNull(), // Cloudflare Turnstile 验证通过
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    lastSeenAt: timestamp('last_seen_at').defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex('guests_username_idx').on(table.username),
+  ],
+);
 
 /**
  * 聊天会话表：一个游客 + 一个角色 = 一个会话

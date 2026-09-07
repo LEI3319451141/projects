@@ -190,8 +190,25 @@ export default function ChatPage() {
       const guestId = await getGuestId();
       guestIdRef.current = guestId;
 
-      // 检查游客是否已通过人机验证，未验证则重定向回首页
-      if (guestId) {
+      // 检查是否已登录（注册用户自动通过人机验证）
+      let isLoggedIn = false;
+      try {
+        const meRes = await fetch('/api/auth/me');
+        const meData = await meRes.json();
+        if (meData.user?.username) {
+          isLoggedIn = true;
+          // 如果登录的 userId 和 localStorage 的不一致，更新
+          if (meData.user.id !== guestId) {
+            localStorage.setItem('guest_id', meData.user.id);
+            guestIdRef.current = meData.user.id;
+          }
+        }
+      } catch {
+        // ignore
+      }
+
+      // 未登录的游客：检查是否完成 Turnstile 验证
+      if (!isLoggedIn && guestId) {
         try {
           const res = await fetch(`/api/guest?id=${guestId}`);
           if (res.ok) {

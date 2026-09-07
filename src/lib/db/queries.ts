@@ -1,4 +1,4 @@
-import { eq, and, desc, asc } from 'drizzle-orm';
+import { eq, and, desc, asc, or } from 'drizzle-orm';
 import { db, schema } from './index';
 import type { ChatMessage } from './schema';
 
@@ -10,6 +10,49 @@ const { guests, chatSessions, chatMessages } = schema;
 export async function createGuest() {
   const [guest] = await db.insert(guests).values({}).returning();
   return guest;
+}
+
+/**
+ * 按 username 查找用户
+ */
+export async function findGuestByUsername(username: string) {
+  const [guest] = await db
+    .select()
+    .from(guests)
+    .where(eq(guests.username, username));
+  return guest ?? null;
+}
+
+/**
+ * 注册：创建带账号的用户（username 唯一）
+ */
+export async function registerUser(params: {
+  username: string;
+  passwordHash: string;
+  nickname?: string;
+}) {
+  const [guest] = await db
+    .insert(guests)
+    .values({
+      username: params.username,
+      passwordHash: params.passwordHash,
+      nickname: params.nickname ?? params.username,
+      humanVerified: true, // 注册用户自动通过人机验证
+    })
+    .returning();
+  return guest;
+}
+
+/**
+ * 更新用户密码
+ */
+export async function updatePassword(guestId: string, passwordHash: string) {
+  const [updated] = await db
+    .update(guests)
+    .set({ passwordHash })
+    .where(eq(guests.id, guestId))
+    .returning();
+  return updated;
 }
 
 /**

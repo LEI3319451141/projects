@@ -1,6 +1,9 @@
 import { NextRequest } from "next/server";
 import { getCharacterById } from "@/lib/characters";
 import { getOrCreateSession, addMessage, isGuestVerified } from "@/lib/db/queries";
+import { getSessionGuestId } from "@/lib/user-auth";
+import { db, schema } from "@/lib/db/index";
+import { eq } from "drizzle-orm";
 
 type ChatMessage = { role: string; content: string };
 
@@ -13,10 +16,24 @@ export async function POST(request: NextRequest) {
       guestId?: string;
     };
 
-    // 人机验证检查：未验证的游客拒绝访问聊天 API
-    if (guestId) {
+    // 人机验证检查
+    // 优先使用 session cookie 中的 guestId（登录用户自动通过）
+    const sessionGuestId = await getSessionGuestId();
+    const effectiveGuestId = sessionGuestId ?? guestId;
+
+    // 登录用户直接通过（有 username 表示注册过）
+    let skipVerification = false;
+    if (sessionGuestId) {
+      const [u] = await db
+        .select({ username: schema.guests.username })
+        .from(schema.guests)
+        .where(eq(schema.guests.id, sessionGuestId));
+      if (u?.username) skipVerification = true;
+    }
+
+    if (!skipVerification && effectiveGuestId) {
       try {
-        const verified = await isGuestVerified(guestId);
+        const verified = await isGuestVerified(effectiveGuestId);
         if (!verified) {
           return new Response(
             JSON.stringify({ error: "Human verification required" }),
@@ -59,9 +76,9 @@ export async function POST(request: NextRequest) {
     // 预获取会话并保存用户消息
     let sessionId: string | null = null;
     let savedUserMsgId: string | null = null;
-    if (guestId) {
+    if (effectiveGuestId) {
       try {
-        const session = await getOrCreateSession(guestId, characterId);
+        const session = await getOrCreateSession(effectiveGuestId, characterId);
         sessionId = session.id;
         const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
         if (lastUserMsg) {
