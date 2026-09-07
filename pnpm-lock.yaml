@@ -17,6 +17,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.71.1(react@19.2.3))
+      '@marsidev/react-turnstile':
+        specifier: ^1.6.1
+        version: 1.6.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@radix-ui/react-accordion':
         specifier: ^1.2.12
         version: 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.10))(@types/react@19.2.10)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -1404,6 +1407,12 @@ packages:
     engines: {node: '>=20'}
     peerDependencies:
       '@langchain/core': ^1.2.2
+
+  '@marsidev/react-turnstile@1.6.1':
+    resolution: {integrity: sha512-ojI9NLYv821IRKi7KraTkxTto6KC/m58hNNyKxvYxm/cQBu5MI5eMkaiJs2JSQBFiXE3LPQI3seJVjv/2lgALA==}
+    peerDependencies:
+      react: ^17.0.2 || ^18.0.0 || ^19.0
+      react-dom: ^17.0.2 || ^18.0.0 || ^19.0
 
   '@modelcontextprotocol/sdk@1.25.3':
     resolution: {integrity: sha512-vsAMBMERybvYgKbg/l4L1rhS7VXV1c0CtyJg72vwxONVX0l4ZfKVAnZEWTQixJGTzKnELjQ59e4NbdFDALRiAQ==}
@@ -7648,6 +7657,11 @@ snapshots:
       - '@smithy/hash-node'
       - '@smithy/signature-v4'
       - ws
+
+  '@marsidev/react-turnstile@1.6.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+    dependencies:
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
 
   '@modelcontextprotocol/sdk@1.25.3(@cfworker/json-schema@4.1.1)(hono@4.11.7)(zod@3.25.76)':
     dependencies:

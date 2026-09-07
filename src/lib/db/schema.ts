@@ -5,6 +5,7 @@ import {
   text,
   timestamp,
   numeric,
+  boolean,
   uniqueIndex,
   index,
 } from 'drizzle-orm/pg-core';
@@ -18,6 +19,7 @@ export const guests = pgTable('guests', {
   nickname: varchar('nickname', { length: 50 }),
   email: varchar('email', { length: 255 }),
   status: varchar('status', { length: 20 }).default('active').notNull(), // active | banned
+  humanVerified: boolean('human_verified').default(false).notNull(), // Cloudflare Turnstile 验证通过
   createdAt: timestamp('created_at').defaultNow().notNull(),
   lastSeenAt: timestamp('last_seen_at').defaultNow().notNull(),
 });

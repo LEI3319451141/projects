@@ -2,7 +2,7 @@
 
 import { characters, type Character } from "@/lib/characters";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   motion,
   useMotionValue,
@@ -11,8 +11,9 @@ import {
   useTransform,
   type Variants,
 } from "motion/react";
-import { Sparkles, Heart, MessageCircle } from "lucide-react";
+import { Sparkles, Heart, MessageCircle, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
 // 角色标签（从人设中提炼）
 const characterTraits: Record<string, string[]> = {
@@ -266,10 +267,62 @@ function CharacterCard({
 export default function HomePage() {
   const router = useRouter();
   const shouldReduceMotion = useReducedMotion();
+  const [verified, setVerified] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [guestId, setGuestId] = useState<string>("");
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
+
+  // 启动时获取/创建 guestId
+  useEffect(() => {
+    async function initGuest() {
+      try {
+        const saved = localStorage.getItem("guest_id");
+        if (saved) {
+          setGuestId(saved);
+          return;
+        }
+        const res = await fetch("/api/guest", { method: "POST" });
+        const data = await res.json();
+        if (data.guestId) {
+          localStorage.setItem("guest_id", data.guestId);
+          setGuestId(data.guestId);
+        }
+      } catch {
+        // ignore
+      }
+    }
+    initGuest();
+  }, []);
+
+  const handleTurnstileSuccess = async (token: string) => {
+    setVerifying(true);
+    try {
+      const res = await fetch("/api/verify-turnstile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, guestId }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setVerified(true);
+      } else {
+        console.error("Verification failed");
+        turnstileRef.current?.reset();
+      }
+    } catch {
+      console.error("Verification error");
+      turnstileRef.current?.reset();
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   const handleSelect = (characterId: string) => {
+    if (!verified) return;
     router.push(`/chat/${characterId}`);
   };
+
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 
   return (
     <div
@@ -357,11 +410,66 @@ export default function HomePage() {
         </motion.p>
       </motion.div>
 
+      {/* 人机验证区域 */}
+      {!verified && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.6 }}
+          className="mb-8 flex flex-col items-center gap-3"
+        >
+          <div className="flex items-center gap-2 text-sm text-[#666]">
+            <ShieldCheck className="h-4 w-4" style={{ color: "#07C160" }} />
+            <span>请先完成安全验证</span>
+          </div>
+          {siteKey ? (
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={siteKey}
+              options={{
+                theme: "light",
+                size: "normal",
+              }}
+              onSuccess={handleTurnstileSuccess}
+              onError={() => console.error("Turnstile error")}
+              onExpire={() => {
+                console.log("Turnstile expired");
+              }}
+            />
+          ) : (
+            <div className="text-xs text-red-500">
+              验证未配置（缺少 NEXT_PUBLIC_TURNSTILE_SITE_KEY）
+            </div>
+          )}
+          {verifying && (
+            <div className="text-xs text-[#888] flex items-center gap-2">
+              <div className="w-3 h-3 border-2 border-[#CCCCCC] border-t-[#07C160] rounded-full animate-spin" />
+              验证中...
+            </div>
+          )}
+        </motion.div>
+      )}
+
+      {/* 验证成功提示 */}
+      {verified && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+          className="mb-6 flex items-center gap-2 text-sm"
+        >
+          <div className="w-6 h-6 rounded-full bg-[#07C160] flex items-center justify-center">
+            <ShieldCheck className="h-3.5 w-3.5 text-white" />
+          </div>
+          <span className="text-[#07C160] font-medium">验证通过，请选择男友</span>
+        </motion.div>
+      )}
+
       {/* 角色卡片网格 */}
       <motion.div
         variants={containerVariants}
         initial="hidden"
-        animate="visible"
+        animate={verified ? "visible" : "hidden"}
         className="grid grid-cols-2 gap-4 w-full max-w-[360px]"
       >
         {characters.map((char, index) => (

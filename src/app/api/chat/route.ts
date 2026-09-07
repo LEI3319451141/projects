@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getCharacterById } from "@/lib/characters";
-import { getOrCreateSession, addMessage } from "@/lib/db/queries";
+import { getOrCreateSession, addMessage, isGuestVerified } from "@/lib/db/queries";
 
 type ChatMessage = { role: string; content: string };
 
@@ -12,6 +12,21 @@ export async function POST(request: NextRequest) {
       searchQuery?: string;
       guestId?: string;
     };
+
+    // 人机验证检查：未验证的游客拒绝访问聊天 API
+    if (guestId) {
+      try {
+        const verified = await isGuestVerified(guestId);
+        if (!verified) {
+          return new Response(
+            JSON.stringify({ error: "Human verification required" }),
+            { status: 403, headers: { "Content-Type": "application/json" } }
+          );
+        }
+      } catch (verifyErr) {
+        console.error("Guest verification check error:", verifyErr);
+      }
+    }
 
     const character = getCharacterById(characterId);
     if (!character) {

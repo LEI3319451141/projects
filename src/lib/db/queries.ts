@@ -88,3 +88,26 @@ export async function updateMessageMedia(
     .returning();
   return updated;
 }
+
+/**
+ * 标记游客已通过人机验证
+ */
+export async function markGuestVerified(guestId: string) {
+  const [updated] = await db
+    .update(guests)
+    .set({ humanVerified: true })
+    .where(eq(guests.id, guestId))
+    .returning();
+  return updated;
+}
+
+/**
+ * 检查游客是否已通过人机验证
+ */
+export async function isGuestVerified(guestId: string): Promise<boolean> {
+  const [guest] = await db
+    .select({ humanVerified: guests.humanVerified })
+    .from(guests)
+    .where(eq(guests.id, guestId));
+  return guest?.humanVerified ?? false;
+}

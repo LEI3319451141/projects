@@ -28,7 +28,15 @@ export async function GET(request: NextRequest) {
     if (!guest) {
       return Response.json({ valid: false }, { status: 404 });
     }
-    return Response.json({ valid: true, guestId: guest.id });
+    return Response.json({
+      valid: true,
+      guestId: guest.id,
+      guest: {
+        id: guest.id,
+        humanVerified: guest.humanVerified,
+        status: guest.status,
+      },
+    });
   } catch (error) {
     console.error('Verify guest error:', error);
     return Response.json({ valid: false }, { status: 500 });

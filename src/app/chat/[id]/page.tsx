@@ -190,6 +190,22 @@ export default function ChatPage() {
       const guestId = await getGuestId();
       guestIdRef.current = guestId;
 
+      // 检查游客是否已通过人机验证，未验证则重定向回首页
+      if (guestId) {
+        try {
+          const res = await fetch(`/api/guest?id=${guestId}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (!data.guest?.humanVerified) {
+              router.push('/');
+              return;
+            }
+          }
+        } catch {
+          // ignore
+        }
+      }
+
       // 从数据库加载历史消息
       const saved = guestId
         ? await loadMessages(guestId, characterId)

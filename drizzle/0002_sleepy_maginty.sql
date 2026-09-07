@@ -1,0 +1,1 @@
+ALTER TABLE "guests" ADD COLUMN "human_verified" boolean DEFAULT false NOT NULL;
