@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { Eye, EyeOff, User, Lock, ArrowLeft, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, User, Lock, ArrowLeft, Loader2, ShieldCheck } from 'lucide-react';
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 
 type Mode = 'login' | 'register';
 
@@ -16,6 +17,10 @@ export default function LoginPage() {
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
+
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '';
 
   // 已登录直接跳首页
   useEffect(() => {
@@ -27,14 +32,29 @@ export default function LoginPage() {
       .catch(() => {});
   }, [router]);
 
+  const switchMode = (m: Mode) => {
+    setMode(m);
+    setError('');
+    setTurnstileToken('');
+    turnstileRef.current?.reset();
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // 注册必须先完成人机验证
+    if (mode === 'register' && !turnstileToken) {
+      setError('请先完成人机验证');
+      return;
+    }
+
     setLoading(true);
     try {
       const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
       const payload: Record<string, string> = { username, password };
       if (mode === 'register' && nickname) payload.nickname = nickname;
+      if (mode === 'register') payload.turnstileToken = turnstileToken;
 
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -44,12 +64,17 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || '请求失败');
+        // token 单次有效，失败后重置验证组件
+        setTurnstileToken('');
+        turnstileRef.current?.reset();
         return;
       }
-      // 登录成功，跳回首页
+      // 成功，跳回首页
       router.replace('/');
     } catch (err) {
       setError('网络错误，请稍后重试');
+      setTurnstileToken('');
+      turnstileRef.current?.reset();
     } finally {
       setLoading(false);
     }
@@ -119,7 +144,7 @@ export default function LoginPage() {
               {mode === 'login' ? '欢迎回来' : '创建账号'}
             </h1>
             <p className="text-[13px] text-[#888] mt-1">
-              {mode === 'login' ? '登录后与男友继续聊天' : '注册即可跳过人机验证'}
+              {mode === 'login' ? '登录后与男友继续聊天' : '注册前请先完成安全验证'}
             </p>
           </div>
 
@@ -141,7 +166,7 @@ export default function LoginPage() {
             {(['login', 'register'] as Mode[]).map((m) => (
               <button
                 key={m}
-                onClick={() => { setMode(m); setError(''); }}
+                onClick={() => switchMode(m)}
                 className={`relative flex-1 text-[13px] font-medium py-2 transition-colors ${
                   mode === m ? 'text-[#1a1a1a]' : 'text-[#999]'
                 }`}
@@ -259,11 +284,49 @@ export default function LoginPage() {
               )}
             </AnimatePresence>
 
+            {/* 注册模式：人机验证 */}
+            <AnimatePresence>
+              {mode === 'register' && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="overflow-hidden flex flex-col items-center gap-2"
+                >
+                  <div className="flex items-center gap-1.5 text-[12px] text-[#888]">
+                    <ShieldCheck className="w-3.5 h-3.5" style={{ color: '#07C160' }} />
+                    <span>请完成人机验证后再注册</span>
+                  </div>
+                  {siteKey ? (
+                    <Turnstile
+                      ref={turnstileRef}
+                      siteKey={siteKey}
+                      options={{ theme: 'light', size: 'normal' }}
+                      onSuccess={(token) => {
+                        setTurnstileToken(token);
+                        setError('');
+                      }}
+                      onError={() => {
+                        setTurnstileToken('');
+                        setError('验证加载失败，请刷新重试');
+                      }}
+                      onExpire={() => setTurnstileToken('')}
+                    />
+                  ) : (
+                    <div className="text-[12px] text-red-500">
+                      验证未配置（缺少 NEXT_PUBLIC_TURNSTILE_SITE_KEY）
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* 提交按钮 */}
             <button
               type="submit"
-              disabled={loading}
-              className="relative w-full h-11 rounded-[12px] text-white text-[15px] font-medium mt-2 transition-all disabled:opacity-60 flex items-center justify-center gap-2 active:scale-[0.98]"
+              disabled={loading || (mode === 'register' && !turnstileToken)}
+              className="relative w-full h-11 rounded-[12px] text-white text-[15px] font-medium mt-2 transition-all disabled:opacity-50 flex items-center justify-center gap-2 active:scale-[0.98]"
               style={{
                 background: 'linear-gradient(135deg, #07C160, #1AB36A)',
                 boxShadow: '0 4px 12px rgba(7,193,96,0.3)',
@@ -276,8 +339,10 @@ export default function LoginPage() {
                 </>
               ) : mode === 'login' ? (
                 '登录'
-              ) : (
+              ) : turnstileToken ? (
                 '注册'
+              ) : (
+                '请先完成验证'
               )}
             </button>
           </form>
@@ -289,7 +354,7 @@ export default function LoginPage() {
                 还没有账号？
                 <button
                   type="button"
-                  onClick={() => { setMode('register'); setError(''); }}
+                  onClick={() => switchMode('register')}
                   className="text-[#07C160] font-medium ml-1 hover:underline"
                 >
                   去注册
@@ -300,7 +365,7 @@ export default function LoginPage() {
                 已有账号？
                 <button
                   type="button"
-                  onClick={() => { setMode('login'); setError(''); }}
+                  onClick={() => switchMode('login')}
                   className="text-[#07C160] font-medium ml-1 hover:underline"
                 >
                   去登录
